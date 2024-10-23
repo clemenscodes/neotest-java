@@ -11,16 +11,23 @@ local ch = require("neotest-java.context_holder")
 
 local detect_project_type = require("neotest-java.util.detect_project_type")
 
+-- Patch file check function
+--  File.exists() returns false for readonly files
+-- eg. for files in /nix/store/
 local check_junit_jar = function(filepath)
-	local exists, _ = File.exists(filepath)
-	assert(
-		exists,
-		([[
+	local file = io.open(filepath, "r")
+	if file then
+		file:close()
+	else
+		assert(
+			false,
+			([[
     Junit Platform Console Standalone jar not found at %s
     Please run the following command to download it: NeotestJava setup
     Or alternatively, download it from https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.1/junit-platform-console-standalone-1.10.1.jar
   ]]):format(filepath)
-	)
+		)
+	end
 end
 
 ---@type neotest.Adapter
